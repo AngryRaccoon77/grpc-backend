@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package com.example.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.example.grpcbackend";
+option java_outer_classname = "AlertBackendProto";
+
+import "google/protobuf/empty.proto";
+// Сообщение, полученное из RabbitMQ
+message DeviceEvent {
+  string id = 1;            // Уникальный идентификатор устройства
+  string name = 2;          // Имя устройства
+  string type = 3;          // Тип сервиса (например, WATERLEAK, SMOKE и т.д.)
+  string data = 4;          // Данные устройства в JSON-формате
+  bool status = 5;          // Текущий статус устройства (online/offline)
+}
+
+// Запрос от клиента к бэкенду
+message AlertRequest {
+  DeviceEvent event = 1;    // Событие от устройства
+}
+
+// Ответ от бэкенда клиенту
+message AlertResponse {
+  bool isAlert = 1;         // Является ли событие тревогой
+  string alertType = 2;     // Тип тревоги (например, WATERLEAK, SMOKE)
+  string message = 3;       // Дополнительная информация
+}
+
+// Сервис бэкенда
+service AlertBackend {
+  rpc ProcessEvent(AlertRequest) returns (AlertResponse);
+}
+
+// Сервис клиента
+service AlertClient {
+  rpc PublishAlert(AlertResponse) returns (google.protobuf.Empty);
+}
+
